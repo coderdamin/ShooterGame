@@ -255,29 +255,30 @@ AWeapon* AKillerCharacter::GetWeapon(int nIndex) {
 }
 
 bool AKillerCharacter::PickWeapon(TSubclassOf<class AWeapon> weaponType) {
-	if (WEAPON_MAX_COUNT > m_WeaponArray.Num()) {
+	if ((Role == ROLE_Authority)
+		&& (WEAPON_MAX_COUNT > m_WeaponArray.Num())) {
 		AWeapon* pWeapon = GetWorld()->SpawnActor<AWeapon>(weaponType);
 		m_WeaponArray.Add(pWeapon);
 		if (GetCurrentWeapon() == nullptr) {
 			EquipWeaponByIndex(0);
 		}
-		if (IsLocallyControlled()) {
-			ServerPickWeapon(weaponType);
-		}
+		MulticastPickWeapon(weaponType);
 		return true;
 	}
 	return false;
 }
 
 bool AKillerCharacter::RemoveAllWeapon() {
-	for (auto Weapon : m_WeaponArray) {
-		RemoveWeapon(Weapon);
-	}
-	m_WeaponArray.Empty();
-	if (IsLocallyControlled()) {
+	if (Role == ROLE_Authority) {
+		for (auto Weapon : m_WeaponArray) {
+			RemoveWeapon(Weapon);
+		}
+		m_WeaponArray.Empty();
+		return true;
+	}else if (IsLocallyControlled()) {
 		ServerRemoveAllWeapon();
 	}
-	return true;
+	return false;
 }
 
 bool AKillerCharacter::RemoveWeapon(AWeapon*Weapon) {
@@ -290,12 +291,13 @@ bool AKillerCharacter::RemoveWeapon(AWeapon*Weapon) {
 }
 
 bool AKillerCharacter::RemoveWeaponByIndex(int nIndex) {
-	if (nIndex >= 0 && nIndex < WEAPON_MAX_COUNT && nIndex < m_WeaponArray.Num()) {
-		m_WeaponArray.RemoveAt(nIndex);
-		if (IsLocallyControlled()) {
-			ServerRemoveWeaponByIndex(nIndex);
+	if (Role == ROLE_Authority) {
+		if (nIndex >= 0 && nIndex < WEAPON_MAX_COUNT && nIndex < m_WeaponArray.Num()) {
+			m_WeaponArray.RemoveAt(nIndex);
+			return true;
 		}
-		return true;
+	}else if (IsLocallyControlled()) {
+		ServerRemoveWeaponByIndex(nIndex);
 	}
 	return false;
 }
@@ -455,12 +457,8 @@ void AKillerCharacter::OnRep_EquipedWeaponIndex(int nWeaponIndex) {
 	}
 }
 
-bool AKillerCharacter::ServerPickWeapon_Validate(TSubclassOf<class AWeapon> weaponType) {
-	return true;
-}
-
-void AKillerCharacter::ServerPickWeapon_Implementation(TSubclassOf<class AWeapon> weaponType) {
-	if (Role == ROLE_SimulatedProxy) {
+void AKillerCharacter::MulticastPickWeapon_Implementation(TSubclassOf<AWeapon> weaponType) {
+	if ((Role != ROLE_Authority) &&(!IsLocallyControlled())) {
 		PickWeapon(weaponType);
 	}
 }
@@ -470,7 +468,11 @@ bool AKillerCharacter::ServerRemoveWeaponByIndex_Validate(int nIndex) {
 }
 
 void AKillerCharacter::ServerRemoveWeaponByIndex_Implementation(int nIndex) {
-	if (Role == ROLE_SimulatedProxy) {
+	MulticastRemoveWeaponByIndex(nIndex);
+}
+
+void AKillerCharacter::MulticastRemoveWeaponByIndex_Implementation(int nIndex) {
+	if (Role != ROLE_Authority) {
 		RemoveWeaponByIndex(nIndex);
 	}
 }
@@ -480,8 +482,12 @@ bool AKillerCharacter::ServerRemoveAllWeapon_Validate() {
 }
 
 void AKillerCharacter::ServerRemoveAllWeapon_Implementation() {
-	if (Role == ROLE_SimulatedProxy) {
-		RemoveAllWeapon();
+	RemoveAllWeapon();
+}
+
+void AKillerCharacter::MulticastRemoveAllWeapon_Implementation() {
+	if (Role != ROLE_Authority) {
+		MulticastRemoveAllWeapon();
 	}
 }
 

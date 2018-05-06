@@ -107,14 +107,20 @@ public:
 	UFUNCTION()
 	void OnRep_EquipedWeaponIndex(int nWeaponIndex);
 
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerPickWeapon(TSubclassOf<class AWeapon> weaponType);
+	UFUNCTION(reliable, NetMulticast)
+	void MulticastPickWeapon(TSubclassOf<class AWeapon> weaponType);
 
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerRemoveWeaponByIndex(int nIndex);
 
+	UFUNCTION(reliable, NetMulticast)
+	void MulticastRemoveWeaponByIndex(int nIndex);
+
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerRemoveAllWeapon();
+
+	UFUNCTION(reliable, NetMulticast)
+	void MulticastRemoveAllWeapon();
 
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);

@@ -47,7 +47,12 @@ void APickup::NotifyActorBeginOverlap(AActor* OtherActor) {
 	Super::NotifyActorBeginOverlap(OtherActor);
 	AKillerCharacter*pPawn = Cast<AKillerCharacter>(OtherActor);
 	if (pPawn != nullptr) {
-		DoPickup(pPawn);
+		if (Role == ROLE_Authority) {
+			DoPickup(pPawn);
+		}
+		else {
+			ServerDoPickup(pPawn);
+		}
 	}
 }
 
@@ -64,3 +69,10 @@ bool APickup::GiveGiftTo(class AKillerCharacter* pPawn) {
 	return true;
 }
 
+bool APickup::ServerDoPickup_Validate(class AKillerCharacter* pPawn) {
+	return true;
+}
+
+void APickup::ServerDoPickup_Implementation(class AKillerCharacter* pPawn) {
+	DoPickup(pPawn);
+}

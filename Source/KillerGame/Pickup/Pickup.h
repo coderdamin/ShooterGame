@@ -32,6 +32,9 @@ protected:
 private:
 	void DoPickup(class AKillerCharacter* pPawn);
 
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerDoPickup(class AKillerCharacter* pPawn);
+
 public:
 	UPROPERTY(VisibleDefaultsOnly, Category = Pickup)
 	UParticleSystemComponent* PickupPSC;
