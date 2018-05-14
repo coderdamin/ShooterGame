@@ -95,6 +95,7 @@ void AWeaponInstant::DoDamage(const FHitResult&Impact, const FVector&ShootDir) {
 		PointDamage.ShotDirection = ShootDir;
 		PointDamage.Damage = m_WeaponConfig.fDamage;
 		pActor->TakeDamage(PointDamage.Damage
+		//pActor->ServerTakeDamage(PointDamage.Damage
 			, PointDamage
 			, (m_pOwner != nullptr) ? m_pOwner->GetController() : nullptr
 			, this

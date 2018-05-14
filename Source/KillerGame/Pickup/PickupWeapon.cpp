@@ -15,5 +15,12 @@ bool APickupWeapon::GiveGiftTo(class AKillerCharacter* pPawn) {
 	if (pPawn == nullptr) {
 		return false;
 	}
-	return pPawn->PickWeapon(WeaponClass);
+	if (Role != ROLE_Authority) {
+		return false;
+	}
+	bool bRet = pPawn->PickWeapon(WeaponClass);
+	if (bRet) {
+		pPawn->MulticastPickWeapon(WeaponClass);
+	}
+	return bRet;
 }

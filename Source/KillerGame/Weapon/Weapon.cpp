@@ -45,9 +45,9 @@ AWeapon::AWeapon()
 	m_pMesh3p->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	
 	m_pMesh1p = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon1P"));
-	m_pMesh1p->AttachTo(RootComponent);
+	//m_pMesh1p->AttachTo(RootComponent);
 	//m_pMesh1p->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	//m_pMesh1p->SetupAttachment(RootComponent);
+	m_pMesh1p->SetupAttachment(RootComponent);
 	m_pMesh1p->bOnlyOwnerSee = true;
 	m_pMesh1p->bOwnerNoSee = false;
 	m_pMesh1p->bReceivesDecals = false;

@@ -107,6 +107,9 @@ public:
 	UFUNCTION()
 	void OnRep_EquipedWeaponIndex(int nWeaponIndex);
 
+	UFUNCTION(reliable, server, WithValidation, BlueprintCallable, Category = "Game|Weapon")
+	void ServerPickWeapon(TSubclassOf<class AWeapon> weaponType);
+
 	UFUNCTION(reliable, NetMulticast)
 	void MulticastPickWeapon(TSubclassOf<class AWeapon> weaponType);
 
@@ -126,7 +129,7 @@ public:
 	void ServerTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(reliable, NetMulticast)
-	void MulticastTakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class APawn* PawnInstigator, AActor* DamageCauser);
+	void MulticastPlayDamage(float hp, float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 public:
 	void MoveForward(float fVal);

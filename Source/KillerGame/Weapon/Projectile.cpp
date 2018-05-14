@@ -81,17 +81,17 @@ void AProjectile::DoExplode(const FHitResult& HitResult) {
 	}
 	// 以碰撞点为中心做爆炸
 	const FVector ImpactLocation = HitResult.ImpactPoint + HitResult.ImpactNormal * 10.0f;
-	if ((ProjectileConfig.ExplosionDamage > 0)
-		&& (ProjectileConfig.ExplosionRadius > 0)) {
-		UGameplayStatics::ApplyRadialDamage(this
-			, ProjectileConfig.ExplosionDamage
-			, ImpactLocation
-			, ProjectileConfig.ExplosionRadius
-			, nullptr
-			, TArray<AActor*>()
-			, this
-			, GetInstigatorController());
-	}
+	//if ((ProjectileConfig.ExplosionDamage > 0)
+	//	&& (ProjectileConfig.ExplosionRadius > 0)) {
+	//	UGameplayStatics::ApplyRadialDamage(this
+	//		, ProjectileConfig.ExplosionDamage
+	//		, ImpactLocation
+	//		, ProjectileConfig.ExplosionRadius
+	//		, nullptr
+	//		, TArray<AActor*>()
+	//		, this
+	//		, GetInstigatorController());
+	//}
 	if (m_BulletExplosionClass) {
 		const FRotator SpawnRotation = HitResult.ImpactNormal.Rotation();
 		ABulletExplosionEffect* EffectActor = GetWorld()->SpawnActorDeferred<ABulletExplosionEffect>(m_BulletExplosionClass
@@ -109,4 +109,24 @@ void AProjectile::DisableAndDestroy(float DelayTime) {
 		MovementComp->StopMovementImmediately();
 	}
 	SetLifeSpan(DelayTime);
+}
+
+bool AProjectile::ServerDoDamage_Validate(const FHitResult& HitResult) {
+	return true;
+}
+
+void AProjectile::ServerDoDamage_Implementation(const FHitResult& HitResult) {
+	// 以碰撞点为中心做爆炸
+	const FVector ImpactLocation = HitResult.ImpactPoint + HitResult.ImpactNormal * 10.0f;
+	if ((ProjectileConfig.ExplosionDamage > 0)
+		&& (ProjectileConfig.ExplosionRadius > 0)) {
+		UGameplayStatics::ApplyRadialDamage(this
+			, ProjectileConfig.ExplosionDamage
+			, ImpactLocation
+			, ProjectileConfig.ExplosionRadius
+			, nullptr
+			, TArray<AActor*>()
+			, this
+			, GetInstigatorController());
+	}
 }

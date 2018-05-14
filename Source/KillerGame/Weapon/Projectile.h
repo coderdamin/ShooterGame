@@ -36,6 +36,9 @@ public:
 	void DoExplode(const FHitResult& HitResult);
 
 	void DisableAndDestroy(float DelayTime);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerDoDamage(const FHitResult& HitResult);
 	
 public:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
