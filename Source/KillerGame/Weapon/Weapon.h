@@ -192,7 +192,7 @@ protected:
 	AKillerCharacter * m_pOwner;
 
 private:
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_WeaponState)
+	//UPROPERTY(Transient, ReplicatedUsing = OnRep_WeaponState)
 	TEnumAsByte<EMWeaponState> m_emState;
 
 	UPROPERTY(Transient, Replicated)

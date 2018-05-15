@@ -19,8 +19,5 @@ bool APickupWeapon::GiveGiftTo(class AKillerCharacter* pPawn) {
 		return false;
 	}
 	bool bRet = pPawn->PickWeapon(WeaponClass);
-	if (bRet) {
-		pPawn->MulticastPickWeapon(WeaponClass);
-	}
 	return bRet;
 }

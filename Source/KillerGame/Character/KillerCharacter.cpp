@@ -308,16 +308,16 @@ bool AKillerCharacter::EquipWeaponByIndex(int nIndex) {
 	AWeapon* pWeapon = GetWeapon(nIndex);
 	//if (pWeapon != nullptr && m_nEquipedWeaponIndex != nIndex) {
 	if (pWeapon != nullptr){
-		if (Role != ROLE_Authority) {
+		//if (Role != ROLE_Authority) {
 			AWeapon* pWeaponLast = GetWeapon(m_nEquipedWeaponIndex);
 			if (pWeaponLast != nullptr) {
 				pWeaponLast->Unequip();
 			}
 			pWeapon->BeginEquip(this);
-		}
-		else {
+		//}
+		//else {
 			m_nEquipedWeaponIndex = nIndex;
-		}
+		//}
 		return true;
 	}
 	return false;
@@ -341,14 +341,14 @@ float AKillerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 				}
 			}
 		}
-		if (Role != ROLE_Authority) {
+		//if (Role != ROLE_Authority) {
 			if (m_fHP <= 0.0f) {
 				PlayDie(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
 			}
 			else {
 				PlayHit(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
 			}
-		}
+		//}
 		MulticastPlayDamage(m_fHP, DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	}
 	else {
