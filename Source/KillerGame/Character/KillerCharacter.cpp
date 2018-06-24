@@ -85,31 +85,6 @@ void AKillerCharacter::OnCameraUpdate(const FVector& CameraLocation, const FRota
 	m_pFPP->SetRelativeLocationAndRotation(PitchMesh.GetOrigin(), PitchMesh.Rotator());
 }
 
-// Called to bind functionality to input
-void AKillerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	check(PlayerInputComponent);
-	PlayerInputComponent->BindAxis("MoveForward", this, &AKillerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AKillerCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AKillerCharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AKillerCharacter::StopJump);
-	PlayerInputComponent->BindAction("EnterRunState", IE_Pressed, this, &AKillerCharacter::EnterRunningState);
-	PlayerInputComponent->BindAction("EnterRunState", IE_Released, this, &AKillerCharacter::OutRunningState);
-	PlayerInputComponent->BindAction("EnterAimState", IE_Pressed, this, &AKillerCharacter::EnterAimingState);
-	PlayerInputComponent->BindAction("EnterAimState", IE_Released, this, &AKillerCharacter::OutAimingState);
-	PlayerInputComponent->BindAction("Firing", IE_Pressed, this, &AKillerCharacter::BeginFiring);
-	PlayerInputComponent->BindAction("Firing", IE_Released, this, &AKillerCharacter::EndFiring);
-	PlayerInputComponent->BindAction("NextWeapon", IE_Pressed, this, &AKillerCharacter::NextWeapon);
-	PlayerInputComponent->BindAction("PrevWeapon", IE_Pressed, this, &AKillerCharacter::PrevWeapon);
-	PlayerInputComponent->BindAction("ReloadAmmo", IE_Pressed, this, &AKillerCharacter::ReloadAmmo);
-	PlayerInputComponent->BindAction("SetBursting", IE_Pressed, this, &AKillerCharacter::SetBursting);
-}
-
 void AKillerCharacter::MoveForward(float fVal) {
 	if (!FLOAT_EQUL(fVal, 0.0f)) {
 		const FRotator Rotation = GetActorRotation();
