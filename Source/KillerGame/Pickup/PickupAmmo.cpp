@@ -11,16 +11,18 @@ void APickupAmmo::BeginPlay() {
 	Super::BeginPlay();
 }
 
-bool APickupAmmo::GiveGiftTo(class AKillerCharacter* pPawn) {
+void APickupAmmo::DoPickup(class AKillerCharacter* pPawn) {	
 	if (pPawn == nullptr) {
-		return false;
+		return;
 	}
 	TArray<AWeapon *> WeaponAll = pPawn->GetWeaponList();
 	for (auto weapon : WeaponAll) {
 		if (weapon && weapon->CheckAmmoType(AmmoType)) {
-			return weapon->AddAmmo(AmmoCount);
+			weapon->AddAmmo(AmmoCount);
+			DestroyWithCleanup();
+			break;
 		}
 	}
-	return false;
 }
+
 

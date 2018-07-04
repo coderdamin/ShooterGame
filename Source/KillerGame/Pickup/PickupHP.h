@@ -18,10 +18,9 @@ public:
 	// Sets default values for this actor's properties
 	APickupHP();
 
+	virtual void DoPickup(class AKillerCharacter* pPawn) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-protected:
-	virtual bool GiveGiftTo(class AKillerCharacter* pPawn);
 };

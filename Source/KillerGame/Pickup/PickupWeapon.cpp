@@ -11,13 +11,9 @@ void APickupWeapon::BeginPlay() {
 	Super::BeginPlay();
 }
 
-bool APickupWeapon::GiveGiftTo(class AKillerCharacter* pPawn) {
-	if (pPawn == nullptr) {
-		return false;
+void APickupWeapon::DoPickup(class AKillerCharacter* pPawn) {
+	if (pPawn != nullptr) {
+		pPawn->PickWeapon(WeaponClass);
+		DestroyWithCleanup();
 	}
-	if (Role != ROLE_Authority) {
-		return false;
-	}
-	bool bRet = pPawn->PickWeapon(WeaponClass);
-	return bRet;
 }

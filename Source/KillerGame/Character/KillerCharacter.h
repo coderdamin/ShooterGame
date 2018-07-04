@@ -108,35 +108,19 @@ public:
 	UFUNCTION()
 	void OnRep_EquipedWeaponIndex(int nWeaponIndex);
 
-	UFUNCTION(reliable, server, WithValidation, BlueprintCallable, Category = "Game|Weapon")
-	void ServerPickWeapon(TSubclassOf<class AWeapon> weaponType);
+	//// 服务的过来的操作，
+	//UFUNCTION(reliable, NetMulticast)
+	//void Multicast_OnReloadAmmo();
 
-	UFUNCTION(reliable, NetMulticast)
-	void MulticastPickWeapon(TSubclassOf<class AWeapon> weaponType);
+	//UFUNCTION(reliable, NetMulticast)
+	//void Multicast_OnPrevWeapon();
 
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerRemoveWeaponByIndex(int nIndex);
-
-	UFUNCTION(reliable, NetMulticast)
-	void MulticastRemoveWeaponByIndex(int nIndex);
-
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerRemoveAllWeapon();
-
-	UFUNCTION(reliable, NetMulticast)
-	void MulticastRemoveAllWeapon();
-
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
-
-	UFUNCTION(reliable, NetMulticast)
-	void MulticastPlayDamage(float hp, float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	//UFUNCTION(reliable, NetMulticast)
+	//void Multicast_OnNextWeapon();
 
 public:
 	void MoveForward(float fVal);
 	void MoveRight(float fVal);
-	void Turn(float fVal);
-	void LookUp(float fVal);
 	void Jump();
 	void StopJump();
 	bool CheckCanRun();
@@ -170,7 +154,6 @@ public:
 	UPROPERTY(Transient, Replicated)
 	float m_fHP;
 	
-	// 可优化为一个状态变量
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_EquipedWeaponIndex)
 	int m_nEquipedWeaponIndex;
 
@@ -184,6 +167,8 @@ public:
 	bool m_bFiring;
 
 private:
-	TArray<AWeapon *> m_WeaponArray;
+	UPROPERTY(Transient, Replicated)
+	TArray<class AWeapon *> m_WeaponArray;
+
 	FTimerHandle m_hDeathAnimTimer;
 };

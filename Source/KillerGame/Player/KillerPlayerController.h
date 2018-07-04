@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "KillerPlayerController.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LOG_CATEGORY_NAME, Log, All);
+
 /**
  * 
  */
@@ -24,7 +26,6 @@ public:
 	void OnLookUp(float fVal);
 	void OnJump();
 	void OnStopJump();
-	bool OnCheckCanRun();
 	void OnEnterRunningState();
 	void OnOutRunningState();
 	void OnEnterAimingState();
@@ -38,8 +39,39 @@ public:
 	void OnOpenScoreBoard();
 	void OnOpenChatInput();
 
+	void PickupGift(class APickup* pPickup);
+
+public:
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnEnterRunningState(bool bEnter);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnEnterAimingState(bool bEnter);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnBeginFiring(bool bBegin);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnNextWeapon(bool bNext);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnSetBursting();
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnReloadAmmo();
+
+	/// ///
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnTakeDamage();
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnPickupGift(class APickup* pPickup);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_OnRemoveWeapon();
+	
 public:
 	class AKillerCharacter* GetKillerCharacter();
 
-	// TODO:Client To Server的网络同步改为同步玩家的1、操作输入/2、操作输入引起的新状态
+private:
 };

@@ -3,6 +3,7 @@
 #include "Pickup.h"
 #include "Components/CapsuleComponent.h"
 #include "Character/KillerCharacter.h"
+#include "Player/KillerPlayerController.h"
 
 
 // Sets default values
@@ -23,6 +24,15 @@ APickup::APickup()
 	PickupPSC->bAutoDestroy = false;
 	PickupPSC->SetupAttachment(RootComponent);
 }
+
+APickup::~APickup() {
+}
+
+//void APickup::BeginDestroy() {
+//	if (PickupPSC) {
+//		PickupPSC->Deactivate();
+//	}
+//}
 
 // Called when the game starts or when spawned
 void APickup::BeginPlay()
@@ -47,32 +57,23 @@ void APickup::NotifyActorBeginOverlap(AActor* OtherActor) {
 	Super::NotifyActorBeginOverlap(OtherActor);
 	AKillerCharacter*pPawn = Cast<AKillerCharacter>(OtherActor);
 	if (pPawn != nullptr) {
-		if (Role == ROLE_Authority) {
-			DoPickup(pPawn);
-		}
-		else {
-			ServerDoPickup(pPawn);
-		}
+		GiveGiftTo(pPawn);
 	}
 }
 
-void APickup::DoPickup(class AKillerCharacter* pPawn) {
-	if (GiveGiftTo(pPawn)) {
-		if (PickupPSC) {
-			PickupPSC->Deactivate();
-		}
-		Destroy();
+void APickup::GiveGiftTo(class AKillerCharacter* pPawn) {
+	if (pPawn == nullptr) {
+		return;
+	}
+	AKillerPlayerController* pc = Cast<AKillerPlayerController>(pPawn->GetController());
+	if (pc != nullptr) {
+		pc->PickupGift(this);
 	}
 }
 
-bool APickup::GiveGiftTo(class AKillerCharacter* pPawn) {
-	return true;
-}
-
-bool APickup::ServerDoPickup_Validate(class AKillerCharacter* pPawn) {
-	return true;
-}
-
-void APickup::ServerDoPickup_Implementation(class AKillerCharacter* pPawn) {
-	DoPickup(pPawn);
+void APickup::DestroyWithCleanup() {
+	if (PickupPSC) {
+		PickupPSC->Deactivate();
+	}
+	Destroy();
 }

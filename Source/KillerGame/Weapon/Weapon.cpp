@@ -56,6 +56,8 @@ AWeapon::AWeapon()
 	m_pMesh1p->SetCollisionObjectType(ECC_WorldDynamic);
 	m_pMesh1p->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	m_pMesh1p->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -393,7 +395,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmo, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmoInClip, COND_OwnerOnly);
 
-	DOREPLIFETIME_CONDITION(AWeapon, m_emState, COND_SkipOwner);
+	//DOREPLIFETIME_CONDITION(AWeapon, m_emState, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, m_bBursting, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, m_fLastFireTime, COND_SkipOwner);
 }

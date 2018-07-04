@@ -3,6 +3,9 @@
 #include "KillerPlayerController.h"
 #include "Character/KillerCharacter.h"
 #include "Character/KillerCameraManager.h"
+#include "Pickup/Pickup.h"
+
+DEFINE_LOG_CATEGORY(LOG_CATEGORY_NAME)
 
 AKillerPlayerController::AKillerPlayerController(const FObjectInitializer&ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -54,14 +57,14 @@ void AKillerPlayerController::OnMoveRight(float fVal) {
 void AKillerPlayerController::OnTurn(float fVal) {
 	AKillerCharacter* pCharacter = GetKillerCharacter();
 	if (pCharacter != nullptr) {
-		pCharacter->Turn(fVal);
+		pCharacter->AddControllerYawInput(fVal);
 	}
 }
 
 void AKillerPlayerController::OnLookUp(float fVal) {
 	AKillerCharacter* pCharacter = GetKillerCharacter();
 	if (pCharacter != nullptr) {
-		pCharacter->LookUp(fVal);
+		pCharacter->AddControllerPitchInput(fVal);
 	}
 }
 
@@ -80,72 +83,124 @@ void AKillerPlayerController::OnStopJump() {
 }
 
 void AKillerPlayerController::OnEnterRunningState() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->EnterRunningState();
+	if (Role != ROLE_Authority) {
+		Server_OnEnterRunningState(true);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->EnterRunningState();
+		}
 	}
 }
 
 void AKillerPlayerController::OnOutRunningState() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->OutRunningState();
+	if (Role != ROLE_Authority) {
+		Server_OnEnterRunningState(false);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->OutRunningState();
+		}
 	}
 }
 
 void AKillerPlayerController::OnEnterAimingState() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->EnterAimingState();
+	if (Role != ROLE_Authority) {
+		Server_OnEnterAimingState(true);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->EnterAimingState();
+		}
 	}
 }
 
 void AKillerPlayerController::OnOutAimingState() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->OutAimingState();
+	if (Role != ROLE_Authority) {
+		Server_OnEnterAimingState(true);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->OutAimingState();
+		}
 	}
 }
 
 void AKillerPlayerController::OnBeginFiring() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->BeginFiring();
+	if (Role != ROLE_Authority) {
+		Server_OnBeginFiring(true);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->BeginFiring();
+		}
 	}
 }
 
 void AKillerPlayerController::OnEndFiring() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->EndFiring();
+	if (Role != ROLE_Authority) {
+		Server_OnBeginFiring(false);
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->EndFiring();
+		}
 	}
 }
 
 void AKillerPlayerController::OnNextWeapon() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->NextWeapon();
+	if (Role != ROLE_Authority) {
+		Server_OnNextWeapon(true);
+	}
+	//if ((Role == ROLE_Authority) || (IsLocalController())) {
+	if (Role == ROLE_Authority) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->NextWeapon();
+		}
 	}
 }
 
 void AKillerPlayerController::OnPrevWeapon() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->PrevWeapon();
+	if (Role != ROLE_Authority) {
+		Server_OnNextWeapon(false);
+	}
+	//if ((Role == ROLE_Authority) || (IsLocalController())) {
+	if (Role == ROLE_Authority) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->PrevWeapon();
+		}
 	}
 }
 
 void AKillerPlayerController::OnReloadAmmo() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->ReloadAmmo();
+	if (Role != ROLE_Authority) {
+		Server_OnReloadAmmo();
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->ReloadAmmo();
+		}
 	}
 }
 
 void AKillerPlayerController::OnSetBursting() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		pCharacter->SetBursting();
+	if (Role != ROLE_Authority) {
+		Server_OnSetBursting();
+	}
+	if ((Role == ROLE_Authority) || (IsLocalController())) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter != nullptr) {
+			pCharacter->SetBursting();
+		}
 	}
 }
 
@@ -158,4 +213,148 @@ void AKillerPlayerController::OnOpenChatInput() {
 AKillerCharacter* AKillerPlayerController::GetKillerCharacter() {
 	APawn* pPawn = GetPawn();
 	return (pPawn != nullptr) ? Cast<AKillerCharacter>(pPawn) : nullptr;
+}
+
+bool AKillerPlayerController::Server_OnEnterRunningState_Validate(bool bEnter) {
+	return true;
+}
+void AKillerPlayerController::Server_OnEnterRunningState_Implementation(bool bEnter) {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Set RunningState None Character!"));
+		return;
+	}
+	if (bEnter) {
+		pCharacter->EnterRunningState();
+	}
+	else {
+		pCharacter->OutRunningState();
+	}
+}
+
+bool AKillerPlayerController::Server_OnEnterAimingState_Validate(bool bEnter) {
+	return true;
+}
+void AKillerPlayerController::Server_OnEnterAimingState_Implementation(bool bEnter) {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Set AimingState None Character!"));
+		return;
+	}
+	if (bEnter) {
+		pCharacter->EnterAimingState();
+	}
+	else {
+		pCharacter->OutAimingState();
+	}
+}
+
+bool AKillerPlayerController::Server_OnBeginFiring_Validate(bool bBegin) {
+	return true;
+}
+void AKillerPlayerController::Server_OnBeginFiring_Implementation(bool bBegin) {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Begin Firing None Character!"));
+		return;
+	}
+	if (bBegin) {
+		pCharacter->BeginFiring();
+	}
+	else {
+		pCharacter->EndFiring();
+	}
+}
+
+bool AKillerPlayerController::Server_OnNextWeapon_Validate(bool bNext) {
+	return true;
+}
+void AKillerPlayerController::Server_OnNextWeapon_Implementation(bool bNext) {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Next Weapon None Character!"));
+		return;
+	}
+	if (bNext) {
+		pCharacter->NextWeapon();
+	}
+	else {
+		pCharacter->PrevWeapon();
+	}
+}
+
+bool AKillerPlayerController::Server_OnSetBursting_Validate() {
+	return true;
+}
+void AKillerPlayerController::Server_OnSetBursting_Implementation() {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Set Bursting None Character!"));
+		return;
+	}
+	pCharacter->SetBursting();
+}
+
+bool AKillerPlayerController::Server_OnReloadAmmo_Validate() {
+	return true;
+}
+void AKillerPlayerController::Server_OnReloadAmmo_Implementation() {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter != nullptr) {
+		pCharacter->ReloadAmmo();
+	}
+}
+
+void AKillerPlayerController::PickupGift(class APickup* pPickup) {
+	if (pPickup == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Pick Gift None Pickup!"));
+		return;
+	}
+	if (Role == ROLE_Authority) {
+		AKillerCharacter* pCharacter = GetKillerCharacter();
+		if (pCharacter == nullptr) {
+			UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Pick Weapon None Character!"));
+			return;
+		}
+		pPickup->DoPickup(pCharacter);
+	}
+	else {
+		Server_OnPickupGift(pPickup);
+	}
+}
+
+bool AKillerPlayerController::Server_OnTakeDamage_Validate() {
+	return true;
+}
+void AKillerPlayerController::Server_OnTakeDamage_Implementation() {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter != nullptr) {
+		//pCharacter->TakeDamage();
+	}
+}
+
+bool AKillerPlayerController::Server_OnPickupGift_Validate(class APickup* pPickup) {
+	return true;
+}
+void AKillerPlayerController::Server_OnPickupGift_Implementation(class APickup* pPickup) {
+	if (pPickup == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Pick Gift None Pickup!"));
+		return;
+	}
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Pick Gift None Character!"));
+		return;
+	}
+	pPickup->DoPickup(pCharacter);
+}
+
+bool AKillerPlayerController::Server_OnRemoveWeapon_Validate() {
+	return true;
+}
+void AKillerPlayerController::Server_OnRemoveWeapon_Implementation() {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter != nullptr) {
+		//pCharacter->RemoveWeapon();
+	}
 }

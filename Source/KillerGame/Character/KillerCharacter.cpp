@@ -101,14 +101,6 @@ void AKillerCharacter::MoveRight(float fVal) {
 	}
 }
 
-void AKillerCharacter::Turn(float fVal) {
-
-}
-
-void AKillerCharacter::LookUp(float fVal) {
-
-}
-
 void AKillerCharacter::Jump() {
 	ACharacter::Jump();
 }
@@ -236,26 +228,17 @@ bool AKillerCharacter::PickWeapon(TSubclassOf<class AWeapon> weaponType) {
 		if (GetCurrentWeapon() == nullptr) {
 			EquipWeaponByIndex(0);
 		}
-		if (Role == ROLE_Authority) {
-			MulticastPickWeapon(weaponType);
-		}
 		return true;
 	}
 	return false;
 }
 
 bool AKillerCharacter::RemoveAllWeapon() {
-	if (IsLocallyControlled()) {
-		ServerRemoveAllWeapon();
+	for (auto Weapon : m_WeaponArray) {
+		RemoveWeapon(Weapon);
 	}
-	else {
-		for (auto Weapon : m_WeaponArray) {
-			RemoveWeapon(Weapon);
-		}
-		m_WeaponArray.Empty();
-		return true;
-	}
-	return false;
+	m_WeaponArray.Empty();
+	return true;
 }
 
 bool AKillerCharacter::RemoveWeapon(AWeapon*Weapon) {
@@ -268,13 +251,9 @@ bool AKillerCharacter::RemoveWeapon(AWeapon*Weapon) {
 }
 
 bool AKillerCharacter::RemoveWeaponByIndex(int nIndex) {
-	if (IsLocallyControlled()) {
-		ServerRemoveWeaponByIndex(nIndex);
-	}else{
-		if (nIndex >= 0 && nIndex < WEAPON_MAX_COUNT && nIndex < m_WeaponArray.Num()) {
-			m_WeaponArray.RemoveAt(nIndex);
-			return true;
-		}
+	if (nIndex >= 0 && nIndex < WEAPON_MAX_COUNT && nIndex < m_WeaponArray.Num()) {
+		m_WeaponArray.RemoveAt(nIndex);
+		return true;
 	}
 	return false;
 }
@@ -304,31 +283,24 @@ USkeletalMeshComponent* AKillerCharacter::GetSpecifcPawnMesh(bool bFirstPerson) 
 
 float AKillerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
 	float FinalDamage = 0.0f;
-	if ((Role == ROLE_Authority)
-		|| (GetNetMode() != NM_Client)) {
-		if (m_fHP > 0.0f) {
-			FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-			if (FinalDamage > 0.0f) {
-				m_fHP -= FinalDamage;
-				//ReplicateHit(FinalDamage, DamageEvent, EventInstigator, DamageCauser, m_fHP <= 0.0f);
-				if (m_fHP <= 0.0f) {
-					m_fHP = 0.0f;
-				}
+	if (m_fHP > 0.0f) {
+		FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		if (FinalDamage > 0.0f) {
+			m_fHP -= FinalDamage;
+			//ReplicateHit(FinalDamage, DamageEvent, EventInstigator, DamageCauser, m_fHP <= 0.0f);
+			if (m_fHP <= 0.0f) {
+				m_fHP = 0.0f;
 			}
 		}
-		//if (Role != ROLE_Authority) {
-			if (m_fHP <= 0.0f) {
-				PlayDie(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
-			}
-			else {
-				PlayHit(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
-			}
-		//}
-		MulticastPlayDamage(m_fHP, DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	}
-	else {
-		ServerTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	}
+	//if (Role != ROLE_Authority) {
+		if (m_fHP <= 0.0f) {
+			PlayDie(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
+		}
+		else {
+			PlayHit(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
+		}
+	//}
 	return FinalDamage;
 }
 
@@ -428,79 +400,15 @@ FRotator AKillerCharacter::GetAimOffsets() const {
 void AKillerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(AKillerCharacter, m_fHP, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AKillerCharacter, m_nEquipedWeaponIndex, COND_SkipOwner);
-	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bRuningState, COND_SkipOwner);
-	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bAimingState, COND_SkipOwner);
-	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bFiring, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AKillerCharacter, m_nEquipedWeaponIndex, COND_None);
+	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bRuningState, COND_None);
+	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bAimingState, COND_None);
+	DOREPLIFETIME_CONDITION(AKillerCharacter, m_bFiring, COND_None);
+	DOREPLIFETIME_CONDITION(AKillerCharacter, m_WeaponArray, COND_None);
 }
 
 void AKillerCharacter::OnRep_EquipedWeaponIndex(int nWeaponIndex) {
-	//if (Role == ROLE_SimulatedProxy) {
-	this->EquipWeaponByIndex(nWeaponIndex);
+	//if (nWeaponIndex != m_nEquipedWeaponIndex) {
+	this->EquipWeaponByIndex(m_nEquipedWeaponIndex);
 	//}
-}
-
-bool AKillerCharacter::ServerPickWeapon_Validate(TSubclassOf<class AWeapon> weaponType) {
-	return true;
-}
-
-void AKillerCharacter::ServerPickWeapon_Implementation(TSubclassOf<class AWeapon> weaponType) {
-	bool bRet = PickWeapon(weaponType);
-	if (bRet) {
-		MulticastPickWeapon(weaponType);
-	}
-}
-
-void AKillerCharacter::MulticastPickWeapon_Implementation(TSubclassOf<AWeapon> weaponType) {
-	//if ((Role != ROLE_Authority) &&(!IsLocallyControlled())) {
-	//if (Role != ROLE_Authority) {
-	PickWeapon(weaponType);
-	//}
-}
-
-bool AKillerCharacter::ServerRemoveWeaponByIndex_Validate(int nIndex) {
-	return true;
-}
-
-void AKillerCharacter::ServerRemoveWeaponByIndex_Implementation(int nIndex) {
-	MulticastRemoveWeaponByIndex(nIndex);
-}
-
-void AKillerCharacter::MulticastRemoveWeaponByIndex_Implementation(int nIndex) {
-	if (Role != ROLE_Authority) {
-		RemoveWeaponByIndex(nIndex);
-	}
-}
-
-bool AKillerCharacter::ServerRemoveAllWeapon_Validate() {
-	return true;
-}
-
-void AKillerCharacter::ServerRemoveAllWeapon_Implementation() {
-	RemoveAllWeapon();
-}
-
-void AKillerCharacter::MulticastRemoveAllWeapon_Implementation() {
-	if (Role != ROLE_Authority) {
-		MulticastRemoveAllWeapon();
-	}
-}
-
-bool AKillerCharacter::ServerTakeDamage_Validate(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
-	return true;
-}
-
-void AKillerCharacter::ServerTakeDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
-	float FinalDamage = TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-}
-
-void AKillerCharacter::MulticastPlayDamage_Implementation(float hp, float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
-	if (Role != ROLE_Authority) {
-		if (hp <= 0.0f) {
-			PlayDie(DamageAmount, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
-		}
-		else {
-			PlayHit(DamageAmount, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
-		}
-	}
 }

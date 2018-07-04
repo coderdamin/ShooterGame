@@ -10,10 +10,10 @@ void APickupHP::BeginPlay() {
 	Super::BeginPlay();
 }
 
-bool APickupHP::GiveGiftTo(class AKillerCharacter* pPawn) {
+void APickupHP::DoPickup(class AKillerCharacter* pPawn) {
 	if (pPawn == nullptr) {
-		return false;
+		return;
 	}
 	//pPawn->AddHP();
-	return true;
+	//DestroyWithCleanup();
 }
