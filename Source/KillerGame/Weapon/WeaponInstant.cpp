@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "kismet/GameplayStatics.h"
 #include "BulletImpactEffect.h"
+#include "Player/KillerPlayerController.h"
 
 AWeaponInstant::AWeaponInstant()
 	: m_fCurrentSpread(1.0f)
@@ -58,48 +59,18 @@ void AWeaponInstant::RefreshCurrentSpread(bool bForceInit) {
 }
 
 void AWeaponInstant::ProcessInstantHit(const FHitResult&Impact, const FVector&Origin, const FVector&ShootDir, int32 RandomSeed, float Reticlespread) {
-	// 射击表现
-	ProcessInstantHit_Confirmed(Impact, Origin, ShootDir, RandomSeed, Reticlespread);
-}
-
-// RandomSeed, Reticlespread 用于同步给其它客户端，做射击表现
-void AWeaponInstant::ProcessInstantHit_Confirmed(const FHitResult&Impact, const FVector&Origin, const FVector&ShootDir, int32 RandomSeed, float Reticlespread) {
-	// 同步给其它客户端
-	//if (Role == ROLE_Authority) {
-	////	HitNotify = 
-	//}
-	// 单机客户端/服务端
+	AKillerPlayerController* pc = nullptr;
 	if (m_pOwner) {
-		if ((m_pOwner->Role == ROLE_Authority)
-			|| (GetNetMode() != NM_Client)) {
-			DoDamage(Impact, ShootDir);
-		}
-		else {
-			ServerDoDamage(Impact, ShootDir);
-		}	
+		pc = Cast<AKillerPlayerController>(m_pOwner->GetController());
+	}
+	if (pc) {
+		pc->DoDamage(Impact, ShootDir);
 	}
 	// Effect
 	if (GetNetMode() != NM_DedicatedServer) {
 		const FVector EndPoint = Origin + ShootDir * m_WeaponConfig.fWeaponRange;
 		SpawnTrailEffect(EndPoint);
 		SpawnImpactEffects(Impact);
-	}
-}
-
-// 单机客户端/服务端
-void AWeaponInstant::DoDamage(const FHitResult&Impact, const FVector&ShootDir) {
-	AActor* pActor = Impact.GetActor();
-	if (pActor && pActor->bTearOff) {
-		FPointDamageEvent PointDamage;
-		PointDamage.HitInfo = Impact;
-		PointDamage.ShotDirection = ShootDir;
-		PointDamage.Damage = m_WeaponConfig.fDamage;
-		pActor->TakeDamage(PointDamage.Damage
-		//pActor->ServerTakeDamage(PointDamage.Damage
-			, PointDamage
-			, (m_pOwner != nullptr) ? m_pOwner->GetController() : nullptr
-			, this
-		);
 	}
 }
 
@@ -127,12 +98,4 @@ void AWeaponInstant::SpawnImpactEffects(const FHitResult&Impact) {
 
 void AWeaponInstant::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&OutLifetimeProperty) const {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProperty);
-}
-
-bool AWeaponInstant::ServerDoDamage_Validate(const FHitResult&Impact, const FVector&ShootDir) {
-	return true;
-}
-
-void AWeaponInstant::ServerDoDamage_Implementation(const FHitResult&Impact, const FVector&ShootDir) {
-	DoDamage(Impact, ShootDir);
 }

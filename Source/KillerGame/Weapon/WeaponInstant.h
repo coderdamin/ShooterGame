@@ -52,17 +52,11 @@ protected:
 	virtual void OnFiring() override;
 
 	void ProcessInstantHit(const FHitResult&Impact, const FVector&Origin, const FVector&ShootDir, int32 RandomSeed, float Reticlespread);
-	void ProcessInstantHit_Confirmed(const FHitResult&Impact, const FVector&Origin, const FVector&ShootDir, int32 RandomSeed, float Reticlespread);
-
-	void DoDamage(const FHitResult&Impact, const FVector&ShootDir);
 	void SpawnTrailEffect(const FVector&EndPoint);
 	void SpawnImpactEffects(const FHitResult&Impact);
 
 public:
 	virtual bool EndFiring();
-
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerDoDamage(const FHitResult&Impact, const FVector&ShootDir);
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = Weapon)

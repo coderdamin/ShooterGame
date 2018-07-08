@@ -4,6 +4,8 @@
 #include "Character/KillerCharacter.h"
 #include "Character/KillerCameraManager.h"
 #include "Pickup/Pickup.h"
+#include "Weapon/Weapon.h"
+#include "Weapon/Projectile.h"
 
 DEFINE_LOG_CATEGORY(LOG_CATEGORY_NAME)
 
@@ -215,6 +217,16 @@ AKillerCharacter* AKillerPlayerController::GetKillerCharacter() {
 	return (pPawn != nullptr) ? Cast<AKillerCharacter>(pPawn) : nullptr;
 }
 
+
+AWeapon* AKillerPlayerController::GetCurrentWeapon() {
+	AKillerCharacter* pCharacter = GetKillerCharacter();
+	if (pCharacter == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Get Current Weapon None Character!"));
+		return nullptr;
+	}
+	return pCharacter->GetCurrentWeapon();
+}
+
 bool AKillerPlayerController::Server_OnEnterRunningState_Validate(bool bEnter) {
 	return true;
 }
@@ -323,16 +335,6 @@ void AKillerPlayerController::PickupGift(class APickup* pPickup) {
 	}
 }
 
-bool AKillerPlayerController::Server_OnTakeDamage_Validate() {
-	return true;
-}
-void AKillerPlayerController::Server_OnTakeDamage_Implementation() {
-	AKillerCharacter* pCharacter = GetKillerCharacter();
-	if (pCharacter != nullptr) {
-		//pCharacter->TakeDamage();
-	}
-}
-
 bool AKillerPlayerController::Server_OnPickupGift_Validate(class APickup* pPickup) {
 	return true;
 }
@@ -356,5 +358,61 @@ void AKillerPlayerController::Server_OnRemoveWeapon_Implementation() {
 	AKillerCharacter* pCharacter = GetKillerCharacter();
 	if (pCharacter != nullptr) {
 		//pCharacter->RemoveWeapon();
+	}
+}
+
+void AKillerPlayerController::DoDamage(const FHitResult&Impact, const FVector&ShootDir) {
+	if (Role != ROLE_Authority) {
+		Server_DoDamage(Impact, ShootDir);
+	}
+	// 在本地执行
+	Server_DoDamage_Implementation(Impact, ShootDir);
+}
+bool AKillerPlayerController::Server_DoDamage_Validate(const FHitResult&Impact, const FVector&ShootDir) {
+	return true;
+}
+void AKillerPlayerController::Server_DoDamage_Implementation(const FHitResult&Impact, const FVector&ShootDir) {
+	AWeapon* pWeapon = GetCurrentWeapon();
+	if (pWeapon == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Do Damage None Weapon!"));
+		return;
+	}
+	AActor* pActor = Impact.GetActor();
+	//if (pActor && pActor->bTearOff) {
+	if (pActor != nullptr) {
+		FPointDamageEvent PointDamage;
+		PointDamage.HitInfo = Impact;
+		PointDamage.ShotDirection = ShootDir;
+		PointDamage.Damage = pWeapon->GetDamage();
+		pActor->TakeDamage(PointDamage.Damage
+			//pActor->ServerTakeDamage(PointDamage.Damage
+			, PointDamage
+			, this
+			, pWeapon
+		);
+	}
+}
+
+bool AKillerPlayerController::Server_LaunchProjectile_Validate(const FVector&Origin, const FVector&ShootDir) {
+	return true;
+}
+void AKillerPlayerController::Server_LaunchProjectile_Implementation(const FVector&Origin, const FVector&ShootDir) {
+	AWeaponProjectile* pWeapon = Cast<class AWeaponProjectile>(GetCurrentWeapon());
+	if (pWeapon == nullptr) {
+		UE_LOG(LOG_CATEGORY_NAME, Error, TEXT("Launch Projectile None Weapon!"));
+		return;
+	}
+
+	FTransform SpawnTrans(ShootDir.Rotation(), Origin);
+	AProjectile* Projectile = Cast<AProjectile>(UGameplayStatics::BeginSpawningActorFromClass(pWeapon
+		, pWeapon->ProjectileConfig.ProjectileClass
+		, SpawnTrans));
+	if (Projectile)
+	{
+		Projectile->Instigator = GetPawn();
+		Projectile->SetOwner(pWeapon);
+		//Projectile->InitVelocity(ShootDir);
+
+		UGameplayStatics::FinishSpawningActor(Projectile, SpawnTrans);
 	}
 }

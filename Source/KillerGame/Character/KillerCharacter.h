@@ -153,10 +153,7 @@ public:
 
 	UPROPERTY(Transient, Replicated)
 	float m_fHP;
-	
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_EquipedWeaponIndex)
-	int m_nEquipedWeaponIndex;
-
+ 
 	UPROPERTY(Transient, Replicated)
 	bool m_bRuningState;
 
@@ -165,6 +162,9 @@ public:
 
 	UPROPERTY(Transient, Replicated)
 	bool m_bFiring;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_EquipedWeaponIndex)
+	int m_nEquipedWeaponIndex;
 
 private:
 	UPROPERTY(Transient, Replicated)

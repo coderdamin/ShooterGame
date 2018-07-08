@@ -40,6 +40,8 @@ public:
 	void OnOpenChatInput();
 
 	void PickupGift(class APickup* pPickup);
+	void DoDamage(const FHitResult&Impact, const FVector&ShootDir);
+	void LaunchProjectile(const FVector&Origin, const FVector&ShootDir);
 
 public:
 	UFUNCTION(reliable, server, WithValidation)
@@ -60,9 +62,11 @@ public:
 	UFUNCTION(reliable, server, WithValidation)
 	void Server_OnReloadAmmo();
 
-	/// ///
 	UFUNCTION(reliable, server, WithValidation)
-	void Server_OnTakeDamage();
+	void Server_DoDamage(const FHitResult&Impact, const FVector&ShootDir);
+
+	UFUNCTION(reliable, server, WithValidation)
+	void Server_LaunchProjectile(const FVector&Origin, const FVector&ShootDir);
 
 	UFUNCTION(reliable, server, WithValidation)
 	void Server_OnPickupGift(class APickup* pPickup);
@@ -72,6 +76,7 @@ public:
 	
 public:
 	class AKillerCharacter* GetKillerCharacter();
+	class AWeapon* GetCurrentWeapon();
 
 private:
 };

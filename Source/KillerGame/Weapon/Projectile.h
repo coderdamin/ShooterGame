@@ -31,14 +31,12 @@ public:
 
 	void InitVelocity(FVector&ShootDir);
 
-	void OnImpact(const FHitResult& HitResult);
-
 	void DoExplode(const FHitResult& HitResult);
 
 	void DisableAndDestroy(float DelayTime);
 
-	UFUNCTION(reliable, server, WithValidation)
-	void ServerDoDamage(const FHitResult& HitResult);
+	UFUNCTION()
+	void OnImpact(const FHitResult& HitResult);
 	
 public:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)

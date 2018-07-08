@@ -285,22 +285,21 @@ float AKillerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	float FinalDamage = 0.0f;
 	if (m_fHP > 0.0f) {
 		FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-		if (FinalDamage > 0.0f) {
+		if ((Role == ROLE_Authority) && (FinalDamage > 0.0f)) {
 			m_fHP -= FinalDamage;
-			//ReplicateHit(FinalDamage, DamageEvent, EventInstigator, DamageCauser, m_fHP <= 0.0f);
 			if (m_fHP <= 0.0f) {
 				m_fHP = 0.0f;
 			}
 		}
 	}
-	//if (Role != ROLE_Authority) {
+	if (GetNetMode() != NM_DedicatedServer) {
 		if (m_fHP <= 0.0f) {
 			PlayDie(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
 		}
 		else {
 			PlayHit(FinalDamage, DamageEvent, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageCauser);
 		}
-	//}
+	}
 	return FinalDamage;
 }
 
@@ -408,7 +407,8 @@ void AKillerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 }
 
 void AKillerCharacter::OnRep_EquipedWeaponIndex(int nWeaponIndex) {
-	//if (nWeaponIndex != m_nEquipedWeaponIndex) {
-	this->EquipWeaponByIndex(m_nEquipedWeaponIndex);
-	//}
+	if (nWeaponIndex != m_nEquipedWeaponIndex) {
+		Swap(nWeaponIndex, m_nEquipedWeaponIndex);
+		this->EquipWeaponByIndex(nWeaponIndex);
+	}
 }

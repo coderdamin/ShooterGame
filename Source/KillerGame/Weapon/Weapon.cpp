@@ -228,6 +228,17 @@ bool AWeapon::UpdateState(EMWeaponState emState) {
 			break;
 		case WeaponState_Reloading:
 		{
+			if (Role == ROLE_Authority) {
+				int32 nNeed = m_WeaponConfig.nMagazineSize - m_nCurrentAmmoInClip;
+				if (m_nCurrentAmmo > nNeed) {
+					m_nCurrentAmmo = m_nCurrentAmmo - nNeed;
+					m_nCurrentAmmoInClip = m_WeaponConfig.nMagazineSize;
+				}
+				else {
+					m_nCurrentAmmoInClip += m_nCurrentAmmo;
+					m_nCurrentAmmo = 0;
+				}
+			}
 			const uint32 nReloadCount = FMath::Min(m_WeaponConfig.nMagazineSize, m_nCurrentAmmo - m_nCurrentAmmoInClip);
 			const float fReloadTime = m_WeaponConfig.fReloadSpeed - 0.8 * m_WeaponConfig.fReloadSpeed * (m_nCurrentAmmoInClip / nReloadCount);
 			GetWorldTimerManager().SetTimer(m_hReloadAmmoTimer, this, &AWeapon::OnReloadAmmoCompleted, fReloadTime, false);
@@ -256,7 +267,9 @@ void AWeapon::HandleFiring() {
 	SimulateStrafe();
 	// 不同枪射击的不同处理
 	OnFiring();
-	m_nCurrentAmmoInClip -= 1;
+	if (Role == ROLE_Authority) {
+		m_nCurrentAmmoInClip -= 1;
+	}
 	// HUD刷新
 
 	if (m_bBursting) {
@@ -322,15 +335,6 @@ void AWeapon::OnEquipCompleted() {
 
 void AWeapon::OnReloadAmmoCompleted() {
 	StopWeaponAnimation(m_ReloadAmmoAnim);
-	int32 nNeed = m_WeaponConfig.nMagazineSize - m_nCurrentAmmoInClip;
-	if (m_nCurrentAmmo > nNeed) {
-		m_nCurrentAmmo = m_nCurrentAmmo - nNeed;
-		m_nCurrentAmmoInClip = m_WeaponConfig.nMagazineSize;
-	}
-	else {
-		m_nCurrentAmmoInClip += m_nCurrentAmmo;
-		m_nCurrentAmmo = 0;
-	}
 	UpdateState(WeaponState_Idle);
 }
 
@@ -392,16 +396,25 @@ FVector AWeapon::GetCameraDamageStartLocation(const FVector&AimDir) {
 void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmo, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmoInClip, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmo, COND_None);
+	DOREPLIFETIME_CONDITION(AWeapon, m_nCurrentAmmoInClip, COND_None);
 
 	//DOREPLIFETIME_CONDITION(AWeapon, m_emState, COND_SkipOwner);
-	DOREPLIFETIME_CONDITION(AWeapon, m_bBursting, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AWeapon, m_bBursting, COND_None);
 	DOREPLIFETIME_CONDITION(AWeapon, m_fLastFireTime, COND_SkipOwner);
 }
 
 void AWeapon::OnRep_WeaponState(TEnumAsByte<EMWeaponState> emState) {
 	if (Role == ROLE_SimulatedProxy) {
 		UpdateState(EMWeaponState(emState));
+	}
+}
+
+//void AWeapon::OnRep_CurrentAmmoChanged(int32 nAmmoCount) {
+//}
+
+void AWeapon::OnRep_ClipAmmoChanged(int32 nAmmoCount) {
+	if (m_nCurrentAmmoInClip > nAmmoCount) {
+		BeginReloadAmmo();
 	}
 }

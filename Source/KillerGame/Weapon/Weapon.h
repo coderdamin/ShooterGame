@@ -85,6 +85,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
+	float GetDamage() { return m_WeaponConfig.fDamage; }
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
@@ -121,6 +122,12 @@ public:
 
 	UFUNCTION()
 	void OnRep_WeaponState(TEnumAsByte<EMWeaponState> emState);
+
+	//UFUNCTION()
+	//void OnRep_CurrentAmmoChanged(int32 nAmmoCount);
+	
+	UFUNCTION()
+	void OnRep_ClipAmmoChanged(int32 nAmmoCount);
 
 protected:
 	virtual void OnFiring() {}
@@ -179,10 +186,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Weapon)
 	FWeaponConfig m_WeaponConfig;
 
+	//UPROPERTY(BlueprintReadOnly, Category = Weapon, Transient, ReplicatedUsing = OnRep_CurrentAmmoChanged)
 	UPROPERTY(BlueprintReadOnly, Category = Weapon, Transient, Replicated)
 	int32 m_nCurrentAmmo;
 
-	UPROPERTY(BlueprintReadOnly, Category = Weapon, Transient, Replicated)
+	UPROPERTY(BlueprintReadOnly, Category = Weapon, Transient, ReplicatedUsing = OnRep_ClipAmmoChanged)
 	int32 m_nCurrentAmmoInClip;
 
 	UPROPERTY(EditDefaultsOnly, Category = Weapon)
