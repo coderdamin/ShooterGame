@@ -8,6 +8,7 @@ AKillerBot::AKillerBot(const FObjectInitializer& ObjectInitializer)
 {
 	//static ConstructorHelpers::FClassFinder<AAIController> AIControllerOb(TEXT("Blueprint'/Game/Player/BP_KillerAIController.BP_KillerAIController'"));
 	//AIControllerClass = AIControllerOb.Class;
+	bUseControllerRotationYaw = true;
 }
 
 void AKillerBot::FaceRotation(FRotator NewControlRotation, float DeltaTime) {

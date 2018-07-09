@@ -60,9 +60,7 @@ void AWeaponInstant::RefreshCurrentSpread(bool bForceInit) {
 
 void AWeaponInstant::ProcessInstantHit(const FHitResult&Impact, const FVector&Origin, const FVector&ShootDir, int32 RandomSeed, float Reticlespread) {
 	AKillerPlayerController* pc = nullptr;
-	if (m_pOwner) {
-		pc = Cast<AKillerPlayerController>(m_pOwner->GetController());
-	}
+	pc = (m_pOwner != nullptr) ? Cast<AKillerPlayerController>(m_pOwner->GetController()) : nullptr;
 	if (pc) {
 		pc->DoDamage(Impact, ShootDir);
 	}

@@ -26,6 +26,10 @@ AKillerCharacter::AKillerCharacter(const FObjectInitializer& ObjectInitializer)
 	pMesh->bOwnerNoSee = true;
 	pMesh->bReceivesDecals = false;
 	pMesh->SetCollisionObjectType(ECC_Pawn);
+	pMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	pMesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
+	pMesh->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
+	pMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	m_pFPP = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPPMesh"));
 	check(m_pFPP);
@@ -37,11 +41,14 @@ AKillerCharacter::AKillerCharacter(const FObjectInitializer& ObjectInitializer)
 	m_pFPP->bCastDynamicShadow = false;
 	m_pFPP->bReceivesDecals = false;
 	m_pFPP->CastShadow = false;
+	m_pFPP->SetCollisionObjectType(ECC_Pawn);
+	m_pFPP->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_pFPP->SetCollisionResponseToAllChannels(ECR_Ignore);
 
 	UCapsuleComponent* pCapsuleComponent = GetCapsuleComponent();
 	check(pCapsuleComponent);
-	pCapsuleComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	pCapsuleComponent->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
+	pCapsuleComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	pCapsuleComponent->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 	pCapsuleComponent->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
 }
 
@@ -235,7 +242,9 @@ bool AKillerCharacter::PickWeapon(TSubclassOf<class AWeapon> weaponType) {
 
 bool AKillerCharacter::RemoveAllWeapon() {
 	for (auto Weapon : m_WeaponArray) {
-		RemoveWeapon(Weapon);
+		//RemoveWeapon(Weapon);
+		Weapon->Unequip();
+		delete Weapon;
 	}
 	m_WeaponArray.Empty();
 	return true;

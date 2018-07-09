@@ -401,7 +401,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 
 	//DOREPLIFETIME_CONDITION(AWeapon, m_emState, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, m_bBursting, COND_None);
-	DOREPLIFETIME_CONDITION(AWeapon, m_fLastFireTime, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AWeapon, m_fLastFireTime, COND_None);
 }
 
 void AWeapon::OnRep_WeaponState(TEnumAsByte<EMWeaponState> emState) {
